@@ -22,7 +22,7 @@ export default async function PollPage({
     .from(pollOption)
     .where(eq(pollOption.pollId, id))
     .orderBy(asc(pollOption.id));
-  const data = { ...pollRecord, options } as any;
+  const data = { ...pollRecord, options };
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4 text-center">{data.title}</h1>

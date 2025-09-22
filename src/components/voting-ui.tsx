@@ -16,7 +16,7 @@ import {
 type PollWithOptions = {
   id: string;
   title: string;
-  options: { id: string; text: string; votes: number; pollOd: string }[];
+  options: { id: string; text: string; votes: number; pollId: string }[];
 };
 
 export function VotingUI({ poll }: { poll: PollWithOptions }) {
