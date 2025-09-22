@@ -2,7 +2,7 @@ import { getDb } from "@/db/client";
 import { poll, pollOption } from "@/db/schema";
 import { asc, eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import { votingUI } from "@/components/voting-ui";
+import { VotingUI } from "@/components/voting-ui";
 
 export default async function PollPage({
   params,
@@ -24,9 +24,9 @@ export default async function PollPage({
     .orderBy(asc(pollOption.id));
   const data = { ...pollRecord, options } as any;
   return (
-    <div>
-      <h1>{data.title}</h1>
-      <votingUI poll={data} />
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4 text-center">{data.title}</h1>
+      <VotingUI poll={data} />
     </div>
   );
 }
