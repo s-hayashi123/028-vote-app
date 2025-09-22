@@ -162,11 +162,38 @@ export function getDb() {
 }
 ```
 
+npm run cf-typegen
+
 ### マイグレーション（drizzle-kit）
 
 ```bash
 # 必要なら追加インストール
 npm install -D drizzle-kit dotenv
+
+# 設定ファイル（推奨）を作成: ルートに drizzle.config.ts を置く
+```
+
+```ts
+// drizzle.config.ts
+import "dotenv/config";
+import { defineConfig } from "drizzle-kit";
+
+export default defineConfig({
+  schema: "./src/db/schema.ts",
+  out: "./drizzle",
+  dialect: "sqlite",
+  driver: "d1-http",
+  dbCredentials: {
+    accountId: process.env.CLOUDFLARE_ACCOUNT_ID!,
+    databaseId: process.env.CLOUDFLARE_DATABASE_ID!,
+    token: process.env.CLOUDFLARE_D1_TOKEN!,
+  },
+});
+```
+
+> メモ: drizzle-kit は `.dev.vars` を読みません。`.env` に入れるか、実行前に `export` してください。
+
+```bash
 
 # 環境変数を設定（ターミナルの例）
 export CLOUDFLARE_ACCOUNT_ID=<your_account_id>
@@ -175,6 +202,10 @@ export CLOUDFLARE_D1_TOKEN=<your_api_token>
 
 # スキーマ差分からSQLを生成
 npx drizzle-kit generate
+
+# 代替（CLIで明示指定する場合）
+# npx drizzle-kit generate --config=drizzle.config.ts
+# npx drizzle-kit generate --schema=./src/db/schema.ts --out=./drizzle
 
 # 生成されたSQLを適用（wrangler経由でもOK）
 npx wrangler d1 migrations apply 028-vote-db --local || true
@@ -278,14 +309,18 @@ export default async function PollPage({
 }) {
   const { id } = await params;
   const db = getDb();
-  const [p] = await db.select().from(poll).where(eq(poll.id, id)).limit(1);
-  if (!p) notFound();
+  const [pollRecord] = await db
+    .select()
+    .from(poll)
+    .where(eq(poll.id, id))
+    .limit(1);
+  if (!pollRecord) notFound();
   const options = await db
     .select()
     .from(pollOption)
     .where(eq(pollOption.pollId, id))
     .orderBy(asc(pollOption.id));
-  const data = { ...p, options } as any;
+  const data = { ...pollRecord, options } as any;
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4 text-center">{data.title}</h1>
